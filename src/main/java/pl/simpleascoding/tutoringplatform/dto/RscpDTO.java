@@ -10,9 +10,9 @@ import pl.simpleascoding.tutoringplatform.rscp.RscpStatus;
  * body.
  *
  * @param status  the status code
- * @param message the status message
+ * @param code    the status message code
  * @param body    the response body
  */
 @Immutable
-public record RscpDTO<T>(RscpStatus status, @Nullable String message, @Nullable T body) {
+public record RscpDTO<T>(RscpStatus status, @Nullable String code, @Nullable T body) {
 }
