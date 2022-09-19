@@ -3,6 +3,7 @@ package pl.simpleascoding.tutoringplatform.api;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,25 +23,55 @@ class UserController {
     private final ReviewService reviewService;
 
     @PostMapping
-    ResponseEntity<String> createUser(@RequestBody CreateUserDTO dto, HttpServletRequest request) {
-        return new ResponseEntity<>(userService.createUser(dto, request.getRequestURL().toString()), HttpStatus.OK);
+    ResponseEntity<?> createUser(@RequestBody CreateUserDTO dto, HttpServletRequest request) {
+        RscpDTO<?> rscpDTO = userService.createUser(dto, request.getRequestURL().toString());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("message", rscpDTO.message());
+        HttpStatus httpStatus = HttpStatus.resolve(rscpDTO.status().value());
+
+        return new ResponseEntity<>(headers, httpStatus);
     }
 
     @GetMapping("/confirm-registration")
-    ResponseEntity<String> confirmRegistration(@RequestParam String tokenValue) {
-        return new ResponseEntity<>(userService.confirmUserRegistration(tokenValue), HttpStatus.OK);
+    ResponseEntity<?> confirmRegistration(@RequestParam String tokenValue) {
+        RscpDTO<?> rscpDTO = userService.confirmUserRegistration(tokenValue);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("message", rscpDTO.message());
+        HttpStatus httpStatus = HttpStatus.resolve(rscpDTO.status().value());
+
+        return new ResponseEntity<>(headers, httpStatus);
     }
 
     @PostMapping("/change-password")
-    ResponseEntity<String> changeUserPassword(@RequestBody ChangeUserPasswordDTO dto, Principal principal) {
+    ResponseEntity<?> changeUserPassword(@RequestBody ChangeUserPasswordDTO dto,
+                                         Principal principal, HttpServletRequest request) {
+        RscpDTO<?> rscpDTO = userService.changeUserPassword(dto, principal.getName(), request.getRequestURL().toString());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("message", rscpDTO.message());
+        HttpStatus httpStatus = HttpStatus.resolve(rscpDTO.status().value());
 
-        return new ResponseEntity<>(userService.changeUserPassword(dto, principal.getName()), HttpStatus.OK);
+        return new ResponseEntity<>(headers, httpStatus);
+    }
 
+    @GetMapping("/confirm-change-password")
+    ResponseEntity<?> confirmChangeUserPassword(@RequestParam String tokenValue) {
+        RscpDTO<?> rscpDTO = userService.confirmChangeUserPassword(tokenValue);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("message", rscpDTO.message());
+        HttpStatus httpStatus = HttpStatus.resolve(rscpDTO.status().value());
+
+        return new ResponseEntity<>(headers, httpStatus);
     }
 
     @PatchMapping
-    ResponseEntity<RscpDTO<UserDTO>> modifyUser(@RequestBody ModifyUserDTO dto, Principal principal){
-        return new ResponseEntity<>(userService.modifyUser(dto, principal.getName()), HttpStatus.OK);
+    ResponseEntity<UserDTO> modifyUser(@RequestBody ModifyUserDTO dto, Principal principal) {
+        RscpDTO<UserDTO> rscpDTO = userService.modifyUser(dto, principal.getName());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("message", rscpDTO.message());
+        HttpStatus httpStatus = HttpStatus.resolve(rscpDTO.status().value());
+        UserDTO body = rscpDTO.body();
+
+        return new ResponseEntity<>(body, headers, httpStatus);
     }
 
     @GetMapping("/{id}/reviews/received")
